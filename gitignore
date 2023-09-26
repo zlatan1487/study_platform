@@ -18,6 +18,7 @@ Thumbs.db
 node_modules/
 venv/
 .env
+.idea
 
 # Игнорировать локальные конфигурации
 *.log
