@@ -5,13 +5,6 @@ from rest_framework.response import Response
 from rest_framework import status
 
 
-class CourseSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Course
-        fields = '__all__'
-
-
 class LessonSerializer(serializers.ModelSerializer):
     number_of_lessons = serializers.IntegerField(source='course.lesson_set.count', read_only=True)
 
@@ -27,3 +20,10 @@ class LessonSerializer(serializers.ModelSerializer):
         data['number_of_lessons'] = self.get_number_of_lessons(instance)
         return data
 
+
+class CourseSerializer(serializers.ModelSerializer):
+    lessons = LessonSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Course
+        fields = '__all__'
