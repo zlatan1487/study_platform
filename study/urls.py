@@ -1,7 +1,7 @@
 from django.urls import path
 from study.apps import StudyConfig
 from rest_framework.routers import DefaultRouter
-from study.views import CourseViewSet, LessonCreateAPIView, LessonListAPIView, LessonRetrieveAPIView, LessonUpdateAPIView, LessonDestroyAPIView
+from study.views import CourseViewSet, LessonCreateAPIView, LessonListAPIView, LessonRetrieveAPIView, LessonUpdateAPIView, LessonDestroyAPIView, LessonCountAPIView
 
 app_name = StudyConfig.name
 
@@ -15,4 +15,5 @@ urlpatterns = [
     path('lesson/<int:pk>/', LessonRetrieveAPIView.as_view(), name='lesson-get'),
     path('lesson/update/<int:pk>/', LessonUpdateAPIView.as_view(), name='lesson-update'),
     path('lesson/delete/<int:pk>/', LessonDestroyAPIView.as_view(), name='lesson-delete'),
+    path('lesson/number_of_lessons/', LessonCountAPIView.as_view(), name='lesson_count'),
 ] + router.urls
