@@ -1,10 +1,15 @@
 from django.shortcuts import render
 from rest_framework import viewsets, generics
-from study.serliazers import CourseSerializer, LessonSerializer
-from study.models import Course, Lesson
+from rest_framework.filters import OrderingFilter
+from study.serliazers import CourseSerializer, LessonSerializer, PaymentSerializer
+from study.models import Course, Lesson, Payment
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import rest_framework as filters
+from django_filters import OrderingFilter
+from study.filter.payment_filter import PaymentFilter
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -60,3 +65,12 @@ class LessonCountAPIView(APIView):
     def get(self, request):
         lesson_count = Lesson.objects.count()
         return Response({'lesson_count': lesson_count}, status=status.HTTP_200_OK)
+
+
+class PaymentListAPIView(generics.ListAPIView):
+    serializer_class = PaymentSerializer
+    queryset = Payment.objects.all()
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PaymentFilter
+

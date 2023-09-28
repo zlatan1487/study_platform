@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from study.models import Course, Lesson
+from study.models import Course, Lesson, Payment
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -26,4 +26,11 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
+        fields = '__all__'
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Payment
         fields = '__all__'
