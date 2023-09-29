@@ -10,6 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as filters
 from django_filters import OrderingFilter
 from study.filter.payment_filter import PaymentFilter
+from rest_framework.permissions import IsAuthenticated
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -18,6 +19,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
+    permission_classes = [IsAuthenticated]
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
