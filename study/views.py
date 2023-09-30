@@ -11,22 +11,31 @@ from django_filters import rest_framework as filters
 from django_filters import OrderingFilter
 from study.filter.payment_filter import PaymentFilter
 from rest_framework.permissions import IsAuthenticated
+from study.permissions import BasePermissionMixin, IsOwnerOrModerator # Импортируйте ваш класс разрешений
+from rest_framework import viewsets, permissions
+from rest_framework.permissions import BasePermission
 
 
-class CourseViewSet(viewsets.ModelViewSet):
+class CourseViewSet(BasePermissionMixin, viewsets.ModelViewSet):
     """
          Класс CourseViewSet предоставляет CRUD (Create, Retrieve, Update, Delete) операции для модели Course.
     """
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrModerator]  # Разрешение для администраторов (суперпользователей)
+
+    def perform_create(self, serializer):
+        new_course = serializer.save()
+        new_course.owner = self.request.user
+        new_course.save()
 
 
-class LessonCreateAPIView(generics.CreateAPIView):
+class LessonCreateAPIView(BasePermissionMixin, generics.CreateAPIView):
     """
         Класс LessonCreateAPIView предоставляет возможность создания новых уроков.
     """
     serializer_class = LessonSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class LessonListAPIView(generics.ListAPIView):
@@ -35,6 +44,7 @@ class LessonListAPIView(generics.ListAPIView):
     """
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
+    permission_classes = [IsAuthenticated, IsOwnerOrModerator]
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):
@@ -51,9 +61,10 @@ class LessonUpdateAPIView(generics.UpdateAPIView):
     """
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
+    permission_classes = [IsOwnerOrModerator]
 
 
-class LessonDestroyAPIView(generics.DestroyAPIView):
+class LessonDestroyAPIView(BasePermissionMixin, generics.DestroyAPIView):
     """
         Класс LessonDestroyAPIView предоставляет возможность удаления конкретного урока по его идентификатору.
     """

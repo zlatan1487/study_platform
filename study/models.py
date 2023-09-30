@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from users.models import User
 
 NULLABLE = {'blank': True, 'null': True}
@@ -8,6 +9,7 @@ class Course(models.Model):
     title = models.CharField(max_length=100, verbose_name='Название')
     preview = models.ImageField(upload_to='course_previews/', verbose_name='Превью', blank=True)
     description = models.TextField(verbose_name='Описание')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE)
 
     def __str__(self):
         return self.title
@@ -23,6 +25,7 @@ class Lesson(models.Model):
     preview = models.ImageField(upload_to='lesson_previews/', verbose_name='Превью', **NULLABLE)
     video_link = models.URLField(verbose_name='Ссылка на видео', blank=True)
     course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name='lessons', verbose_name='Курс')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)  # Добавляем поле для владельца
 
     def __str__(self):
         return self.title
