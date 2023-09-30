@@ -9,15 +9,13 @@ class BasePermissionMixin(BasePermission):
     Базовый класс для представлений, предоставляющий общую логику проверки разрешений.
     """
     def create(self, request, *args, **kwargs):
-        # Проверяем, является ли пользователь суперпользователем
         if request.user.is_superuser:
-            return Response({'detail': 'Суперпользователи не могут создавать объекты'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'detail': 'Модераторы не могут создавать объекты'}, status=status.HTTP_403_FORBIDDEN)
         return super().create(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        # Проверяем, является ли пользователь суперпользователем
         if request.user.is_superuser:
-            return Response({'detail': 'Суперпользователи не могут удалять объекты'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'detail': 'Модераторы не могут удалять объекты'}, status=status.HTTP_403_FORBIDDEN)
         return super().destroy(request, *args, **kwargs)
 
 
