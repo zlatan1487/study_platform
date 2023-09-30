@@ -7,11 +7,10 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
-from django_filters import rest_framework as filters
-from django_filters import OrderingFilter
+from django_filters import OrderingFilter, rest_framework as filters
 from study.filter.payment_filter import PaymentFilter
 from rest_framework.permissions import IsAuthenticated
-from study.permissions import BasePermissionMixin, IsOwnerOrModerator # Импортируйте ваш класс разрешений
+from study.permissions import BasePermissionMixin, IsOwnerOrModerator
 from rest_framework import viewsets, permissions
 from rest_framework.permissions import BasePermission
 
@@ -73,7 +72,7 @@ class LessonDestroyAPIView(BasePermissionMixin, generics.DestroyAPIView):
 
 class LessonCountAPIView(APIView):
     """
-        Класс LessonCountAPIView предоставляет информацию о количестве уроков в системе.
+        Класс LessonCountAPIView предоставляет информацию о количестве уроков в курсе
     """
     def get(self, request):
         lesson_count = Lesson.objects.count()
