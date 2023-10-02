@@ -10,6 +10,7 @@ class Course(models.Model):
     preview = models.ImageField(upload_to='course_previews/', verbose_name='Превью', blank=True)
     description = models.TextField(verbose_name='Описание')
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE)
+    subscribers = models.ManyToManyField(User, related_name='subscribed_courses')
 
     def __str__(self):
         return self.title
@@ -49,3 +50,12 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.payment_date}"
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='курс')
+    subscribed = models.BooleanField(default=False, verbose_name='подписан')
+
+    def __str__(self):
+        return f'{self.user} - {self.course} ({self.subscribed})'

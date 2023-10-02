@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import viewsets, generics
 from rest_framework.filters import OrderingFilter
-from study.serliazers import CourseSerializer, LessonSerializer, PaymentSerializer
-from study.models import Course, Lesson, Payment
+from study.serliazers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer
+from study.models import Course, Lesson, Payment, Subscription
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from study.permissions import BasePermissionMixin, IsOwnerOrModerator
 from rest_framework import viewsets, permissions
 from rest_framework.permissions import BasePermission
+from rest_framework.decorators import action
 
 
 class CourseViewSet(BasePermissionMixin, viewsets.ModelViewSet):
@@ -21,12 +22,67 @@ class CourseViewSet(BasePermissionMixin, viewsets.ModelViewSet):
     """
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
-    permission_classes = [IsAuthenticated, IsOwnerOrModerator]  # Разрешение для администраторов (суперпользователей)
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        # Инвертируем логику: is_subscribed будет True для подписанных и False для не подписанных
+        subscribed = instance.subscribers.filter(id=request.user.id).exists()
+        data = serializer.data
+        data['is_subscribed'] = subscribed
+        return Response(data)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
     def perform_create(self, serializer):
-        new_course = serializer.save()
-        new_course.owner = self.request.user
+        new_course = serializer.save(owner=self.request.user)
+        new_course.is_subscribed = False
         new_course.save()
+
+
+    @action(detail=True, methods=['post'])
+    def subscribe(self, request, pk=None):
+        course = self.get_object()
+        user = request.user
+
+        # Проверка, что пользователь еще не подписан на этот курс
+        try:
+            subscription = Subscription.objects.get(user=user, course=course)
+            subscription.subscribed = True
+            subscription.save()
+        except Subscription.DoesNotExist:
+            Subscription.objects.create(user=user, course=course, subscribed=True)
+
+        # Добавляем пользователя в поле subscribers у курса
+        course.subscribers.add(user)
+        course.save()
+
+        return Response({'status': 'Subscribed'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def unsubscribe(self, request, pk=None):
+        course = self.get_object()
+        user = request.user
+
+        # Проверка, что пользователь подписан на этот курс
+        try:
+            subscription = Subscription.objects.get(user=user, course=course)
+            subscription.subscribed = False
+            subscription.save()
+        except Subscription.DoesNotExist:
+            return Response({'error': 'Not subscribed to this course'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Удаляем пользователя из поля subscribers у курса
+        course.subscribers.remove(user)
+        course.save()
+
+        return Response({'status': 'Unsubscribed'}, status=status.HTTP_200_OK)
+
+
 
 
 class LessonCreateAPIView(BasePermissionMixin, generics.CreateAPIView):
@@ -85,4 +141,3 @@ class PaymentListAPIView(generics.ListAPIView):
 
     filter_backends = [DjangoFilterBackend]
     filterset_class = PaymentFilter
-

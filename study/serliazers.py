@@ -1,12 +1,14 @@
 from rest_framework import serializers
-from study.models import Course, Lesson, Payment
+from study.models import Course, Lesson, Payment, Subscription
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from study.validators import validate_youtube_links
 
 
 class LessonSerializer(serializers.ModelSerializer):
     number_of_lessons = serializers.IntegerField(source='course.lesson_set.count', read_only=True)
+    video_link = serializers.CharField(validators=[validate_youtube_links])
 
     class Meta:
         model = Lesson
@@ -33,4 +35,10 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payment
+        fields = '__all__'
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
         fields = '__all__'
