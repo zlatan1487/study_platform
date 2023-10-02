@@ -83,8 +83,6 @@ class CourseViewSet(BasePermissionMixin, viewsets.ModelViewSet):
         return Response({'status': 'Unsubscribed'}, status=status.HTTP_200_OK)
 
 
-
-
 class LessonCreateAPIView(BasePermissionMixin, generics.CreateAPIView):
     """
         Класс LessonCreateAPIView предоставляет возможность создания новых уроков.
