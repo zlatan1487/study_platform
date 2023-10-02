@@ -14,6 +14,7 @@ from study.permissions import BasePermissionMixin, IsOwnerOrModerator
 from rest_framework import viewsets, permissions
 from rest_framework.permissions import BasePermission
 from rest_framework.decorators import action
+from study.paginators import Pagination
 
 
 class CourseViewSet(BasePermissionMixin, viewsets.ModelViewSet):
@@ -23,11 +24,11 @@ class CourseViewSet(BasePermissionMixin, viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
     permission_classes = [IsAuthenticated]
+    pagination_class = Pagination
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        # Инвертируем логику: is_subscribed будет True для подписанных и False для не подписанных
         subscribed = instance.subscribers.filter(id=request.user.id).exists()
         data = serializer.data
         data['is_subscribed'] = subscribed
@@ -42,7 +43,6 @@ class CourseViewSet(BasePermissionMixin, viewsets.ModelViewSet):
         new_course = serializer.save(owner=self.request.user)
         new_course.is_subscribed = False
         new_course.save()
-
 
     @action(detail=True, methods=['post'])
     def subscribe(self, request, pk=None):
